@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Xarxes Locals — Preparació Examen</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+
+  :root {
+    --bg: #0d0d0d;
+    --surface: #161616;
+    --border: #2a2a2a;
+    --accent: #e8ff47;
+    --accent2: #47c5ff;
+    --accent3: #ff6b47;
+    --text: #e8e8e8;
+    --muted: #666;
+    --correct: #47ff8a;
+    --wrong: #ff4747;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Space Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 3rem;
+    position: relative;
+  }
+
+  header::before {
+    content: '';
+    display: block;
+    width: 2px;
+    height: 60px;
+    background: var(--accent);
+    margin: 0 auto 1rem;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 5vw, 3rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--accent);
+    line-height: 1.1;
+  }
+
+  h1 span { color: var(--text); }
+
+  .subtitle {
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-top: 0.5rem;
+  }
+
+  .container { max-width: 860px; margin: 0 auto; }
+
+  /* TEMA SUMMARY */
+  .topics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1px;
+    border: 1px solid var(--border);
+    margin-bottom: 3rem;
+    background: var(--border);
+  }
+
+  .topic-card {
+    background: var(--surface);
+    padding: 1.25rem;
+    transition: background 0.2s;
+  }
+
+  .topic-card:hover { background: #1e1e1e; }
+
+  .topic-num {
+    font-size: 0.65rem;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .topic-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+    color: var(--text);
+  }
+
+  .topic-items {
+    list-style: none;
+    font-size: 0.7rem;
+    color: var(--muted);
+    line-height: 1.9;
+  }
+
+  .topic-items li::before {
+    content: '→ ';
+    color: var(--accent);
+  }
+
+  /* QUIZ */
+  .section-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .quiz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .score-display {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .score-display span {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 2px;
+    background: var(--border);
+    margin-bottom: 2rem;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.4s ease;
+  }
+
+  .question-card {
+    border: 1px solid var(--border);
+    padding: 1.75rem;
+    margin-bottom: 1rem;
+    background: var(--surface);
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .question-card.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .q-meta {
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+
+  .q-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+    color: var(--text);
+  }
+
+  .options { display: grid; gap: 0.5rem; }
+
+  .option-btn {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.78rem;
+    padding: 0.85rem 1rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    line-height: 1.5;
+  }
+
+  .option-btn:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: rgba(232, 255, 71, 0.05);
+  }
+
+  .option-btn .opt-label {
+    color: var(--accent);
+    font-weight: 700;
+    flex-shrink: 0;
+    min-width: 20px;
+  }
+
+  .option-btn.correct {
+    border-color: var(--correct);
+    background: rgba(71, 255, 138, 0.08);
+    color: var(--correct);
+  }
+
+  .option-btn.wrong {
+    border-color: var(--wrong);
+    background: rgba(255, 71, 71, 0.08);
+    color: var(--wrong);
+  }
+
+  .option-btn:disabled { cursor: default; }
+
+  .explanation {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-left: 2px solid var(--accent2);
+    font-size: 0.75rem;
+    color: var(--accent2);
+    background: rgba(71, 197, 255, 0.05);
+    display: none;
+    line-height: 1.7;
+  }
+
+  .explanation.show { display: block; }
+
+  .nav-btns {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    padding: 0.65rem 1.25rem;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: all 0.15s;
+    background: transparent;
+    color: var(--text);
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+    font-weight: 700;
+  }
+
+  .btn:hover { border-color: var(--text); }
+  .btn-primary:hover { background: #d4eb3c; }
+
+  /* RESULTS */
+  .results-card {
+    border: 1px solid var(--accent);
+    padding: 2rem;
+    text-align: center;
+    display: none;
+  }
+
+  .results-card.show { display: block; }
+
+  .result-score {
+    font-family: 'Syne', sans-serif;
+    font-size: 4rem;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+
+  .result-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+
+  .result-msg {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+  }
+
+  /* KEY CONCEPTS */
+  .concept-block {
+    border: 1px solid var(--border);
+    margin-bottom: 0.5rem;
+  }
+
+  .concept-header {
+    padding: 0.85rem 1rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    background: var(--surface);
+    transition: background 0.15s;
+    font-family: 'Syne', sans-serif;
+  }
+
+  .concept-header:hover { background: #1e1e1e; }
+  .concept-header .toggle { color: var(--accent); }
+
+  .concept-body {
+    padding: 0 1rem;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s;
+    font-size: 0.75rem;
+    line-height: 1.9;
+    color: #bbb;
+  }
+
+  .concept-body.open {
+    max-height: 600px;
+    padding: 1rem;
+  }
+
+  .concept-body strong { color: var(--accent); }
+
+  .tag {
+    display: inline-block;
+    background: rgba(232, 255, 71, 0.1);
+    border: 1px solid rgba(232, 255, 71, 0.3);
+    color: var(--accent);
+    font-size: 0.6rem;
+    padding: 0.2rem 0.5rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 4rem;
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  footer::before {
+    content: '';
+    display: block;
+    width: 2px;
+    height: 40px;
+    background: var(--border);
+    margin: 0 auto 1rem;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>Xarxes Locals<br><span>Preparació Examen</span></h1>
+    <p class="subtitle">Mòdul 0225 — MSMX — RA1</p>
+  </header>
+
+  <!-- TEMES PRINCIPALS -->
+  <div class="section-label">Temes principals</div>
+
+  <div class="topics-grid">
+    <div class="topic-card">
+      <div class="topic-num">01</div>
+      <div class="topic-title">Model OSI</div>
+      <ul class="topic-items">
+        <li>7 capes i funcions</li>
+        <li>Trama vs paquet</li>
+        <li>Encapsulació de dades</li>
+        <li>MAC i LLC</li>
+      </ul>
+    </div>
+    <div class="topic-card">
+      <div class="topic-num">02</div>
+      <div class="topic-title">Topologies</div>
+      <ul class="topic-items">
+        <li>Bus, estrella, anell</li>
+        <li>Malla i arbre</li>
+        <li>Avantatges i inconvenients</li>
+      </ul>
+    </div>
+    <div class="topic-card">
+      <div class="topic-num">03</div>
+      <div class="topic-title">Cablejat</div>
+      <ul class="topic-items">
+        <li>UTP / STP / FTP</li>
+        <li>Cable coaxial</li>
+        <li>Fibra òptica</li>
+        <li>Connectors RJ-45, BNC, SC, ST</li>
+      </ul>
+    </div>
+    <div class="topic-card">
+      <div class="topic-num">04</div>
+      <div class="topic-title">Ethernet</div>
+      <ul class="topic-items">
+        <li>CSMA/CD</li>
+        <li>Trama IEEE 802.3</li>
+        <li>10/100/1000 Mbps</li>
+        <li>Regla 5-4-3</li>
+      </ul>
+    </div>
+    <div class="topic-card">
+      <div class="topic-num">05</div>
+      <div class="topic-title">Interconnexió</div>
+      <ul class="topic-items">
+        <li>Hubs i repetidors</li>
+        <li>Bridges i switches</li>
+        <li>Adreces MAC</li>
+        <li>Dominis de col·lisió</li>
+      </ul>
+    </div>
+    <div class="topic-card">
+      <div class="topic-num">06</div>
+      <div class="topic-title">WiFi 802.11</div>
+      <ul class="topic-items">
+        <li>CSMA/CA</li>
+        <li>802.11b/a/g/n/ac/ax</li>
+        <li>WEP, WPA, WPA2, WPA3</li>
+        <li>SSID, AP, BSS, ESS</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- CONCEPTES CLAU -->
+  <div class="section-label" style="margin-bottom:1.5rem">Conceptes clau</div>
+
+  <div id="concepts" style="margin-bottom:3rem">
+
+    <div class="concept-block">
+      <div class="concept-header" onclick="toggleConcept(this)">
+        Capes del model OSI i les seves funcions <span class="toggle">+</span>
+      </div>
+      <div class="concept-body">
+        <span class="tag">Molt probable</span><br>
+        <strong>1. Física</strong> — voltatges, connectors, velocitat de transmissió, codis de línia.<br>
+        <strong>2. Enllaç</strong> — empaquetat final, control d'accés al medi (MAC), detecció d'errors (CRC), adreces físiques. Subcapes: MAC i LLC.<br>
+        <strong>3. Xarxa</strong> — encaminament extrem a extrem (IP, IPX). Protocols orientats/no orientats a connexió.<br>
+        <strong>4. Transport</strong> — garantia de lliurament, multiplexació (TCP, SPX).<br>
+        <strong>5. Sessió</strong> — establiment i gestió de la comunicació (NetBIOS).<br>
+        <strong>6. Presentació</strong> — format de dades, compressió, xifrat (ASCII/EBCDIC).<br>
+        <strong>7. Aplicació</strong> — interfície amb l'usuari i les aplicacions.
+      </div>
+    </div>
+
+    <div class="concept-block">
+      <div class="concept-header" onclick="toggleConcept(this)">
+        CSMA/CD vs CSMA/CA <span class="toggle">+</span>
+      </div>
+      <div class="concept-body">
+        <span class="tag">Molt probable</span><br>
+        <strong>CSMA/CD</strong> (Ethernet cablejada): el node escolta el medi, emet si lliure, detecta col·lisions comparant senyal. En col·lisió emet "jam pattern" i espera temps aleatori.<br><br>
+        <strong>CSMA/CA</strong> (WiFi): no pot detectar col·lisions perquè no pot escoltar i transmetre alhora. Escolta, espera un temps, emet, espera confirmació ACK. Si no arriba ACK = assumeix col·lisió. Opcional: RTS/CTS per al problema del node ocult.
+      </div>
+    </div>
+
+    <div class="concept-block">
+      <div class="concept-header" onclick="toggleConcept(this)">
+        Tipus de cable de parell trenat <span class="toggle">+</span>
+      </div>
+      <div class="concept-body">
+        <span class="tag">Probable</span><br>
+        <strong>UTP</strong>: 4 parells sense blindatge. El més barat i usat. Sensible a interferències.<br>
+        <strong>FTP</strong>: 4 parells embolicats per una única làmina metàl·lica. Protegeix d'interferències externes però no de la diafonia.<br>
+        <strong>STP</strong>: cada parell té la seva pròpia làmina. Protecció superior incloent diafonia. Cal connectar a terra.<br>
+        Connectors: <strong>RJ-45</strong> (xarxes, 4 parells) i <strong>RJ-11</strong> (telefonia, 2 parells).
+      </div>
+    </div>
+
+    <div class="concept-block">
+      <div class="concept-header" onclick="toggleConcept(this)">
+        Estàndards Ethernet i velocitats <span class="toggle">+</span>
+      </div>
+      <div class="concept-body">
+        <span class="tag">Molt probable</span><br>
+        <strong>10base5</strong> (Thicknet): coaxial 50Ω, 500m, 100 nodes.<br>
+        <strong>10base2</strong> (Thinnet): coaxial RG-58, 185m, 30 nodes, connector BNC-T.<br>
+        <strong>10baseT</strong>: UTP cat3, estrella, 100m, hub, connector RJ-45.<br>
+        <strong>100baseTX</strong>: UTP cat5, 100m, 2 parells.<br>
+        <strong>100baseT4</strong>: UTP cat3/4/5, 100m, 4 parells.<br>
+        <strong>1000baseT</strong>: UTP cat5e/6, 100m, 4 parells bidireccionals.<br>
+        <strong>10GbaseT</strong>: UTP cat6/7, <100m.<br>
+        Regla <strong>5-4-3</strong>: màxim 5 segments, 4 repetidors, 3 amb nodes.
+      </div>
+    </div>
+
+    <div class="concept-block">
+      <div class="concept-header" onclick="toggleConcept(this)">
+        Diferències Hub vs Switch vs Bridge <span class="toggle">+</span>
+      </div>
+      <div class="concept-body">
+        <span class="tag">Probable</span><br>
+        <strong>Hub/Repetidor</strong> (capa física): regenera senyal, envia a tots els ports. Un únic domini de col·lisió.<br>
+        <strong>Switch/Bridge</strong> (capa d'enllaç): aprèn adreces MAC, envia el paquet NOMÉS al port destí. Aïlla dominis de col·lisió. El bridge uneix xarxes disperses; el switch incrementa prestacions aïllant dominis.<br>
+        Els switches poden tenir ports Auto MDI/MDI-X i fer funcions de filtratge.
+      </div>
+    </div>
+
+    <div class="concept-block">
+      <div class="concept-header" onclick="toggleConcept(this)">
+        Seguretat WiFi: WEP, WPA, WPA2, WPA3 <span class="toggle">+</span>
+      </div>
+      <div class="concept-body">
+        <span class="tag">Molt probable</span><br>
+        <strong>WEP</strong>: clau compartida de 64-256 bits. TRENCAT des de 2001. No s'ha d'usar.<br>
+        <strong>WPA</strong>: xifrat TKIP 128 bits, clau dinàmica per paquet. Dos modes: Personal (PSK) i Empresarial (RADIUS/802.1x).<br>
+        <strong>WPA2</strong>: xifrat AES 128 bits (IEEE 802.11i). Molt més segur que WEP.<br>
+        <strong>WPA3</strong> (2018): 128 bits personal / 192 bits empresarial. Autenticació Simultània d'Iguals (SAE).<br>
+        <strong>WPS</strong>: facilita la connexió (PIN, botó, NFC) però el mètode PIN és vulnerable. Recomanació: desactivar WPS.
+      </div>
+    </div>
+
+    <div class="concept-block">
+      <div class="concept-header" onclick="toggleConcept(this)">
+        Protocols 802.11 WiFi <span class="toggle">+</span>
+      </div>
+      <div class="concept-body">
+        <span class="tag">Probable</span><br>
+        <strong>802.11b</strong> (WiFi1, 1999): 2,4GHz, 11Mbps.<br>
+        <strong>802.11a</strong> (WiFi2, 1999): 5GHz, 54Mbps. Incompatible amb b.<br>
+        <strong>802.11g</strong> (WiFi3, 2003): 2,4GHz, 54Mbps. Compatible amb b.<br>
+        <strong>802.11n</strong> (WiFi4, 2009): 2,4+5GHz, 500Mbps, MIMO, 40MHz canal.<br>
+        <strong>802.11ac</strong> (WiFi5, 2014): 5GHz, 2Gbps, MU-MIMO 8x8.<br>
+        <strong>802.11ax</strong> (WiFi6, 2019): 2,4+5+6GHz, 10Gbps.<br>
+        <strong>802.11be</strong> (WiFi7, 2024): 46Gbps, MIMO 16x16.
+      </div>
+    </div>
+
+    <div class="concept-block">
+      <div class="concept-header" onclick="toggleConcept(this)">
+        RAID: nivells principals <span class="toggle">+</span>
+      </div>
+      <div class="concept-body">
+        <span class="tag">Possible</span><br>
+        <strong>RAID 0</strong>: distribució de dades (striping). Millora velocitat però ZERO redundància. Si falla un disc es perden totes les dades.<br>
+        <strong>RAID 1</strong>: mirroring (còpia exacta). Alta seguretat, però cal el doble de discs. Escriptures ~15% més lentes.<br>
+        <strong>RAID 5</strong>: dades + paritat distribuïdes en tots els discos. El més usat en LAN. Millors lectures, escriptures més lentes.<br>
+        <strong>RAID 10</strong> (0+1): combina velocitat de RAID0 amb seguretat de RAID1.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- QUIZ -->
+  <div class="section-label">Test de 15 preguntes</div>
+
+  <div class="quiz-header">
+    <div class="score-display">Puntuació: <span id="scoreVal">0</span> / <span id="totalVal">15</span></div>
+    <button class="btn btn-primary" onclick="restartQuiz()">↺ Reiniciar</button>
+  </div>
+
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
+
+  <div id="quizContainer"></div>
+  <div class="results-card" id="resultsCard">
+    <div class="result-score" id="finalScore">0/15</div>
+    <div class="result-label">puntuació final</div>
+    <div class="result-msg" id="resultMsg"></div>
+    <button class="btn btn-primary" onclick="restartQuiz()">Tornar a intentar</button>
+  </div>
+
+  <footer>
+    MSMX · Mòdul 0225 · Xarxes Locals · RA1<br>
+    autor: Sergi Cercós Gallego
+  </footer>
+
+</div>
+
+<script>
+const questions = [
+  {
+    topic: "Model OSI",
+    text: "Quina capa del model OSI s'encarrega del control d'accés al medi (MAC) i de la detecció d'errors amb CRC?",
+    options: ["Capa física", "Capa d'enllaç de dades", "Capa de xarxa", "Capa de transport"],
+    correct: 1,
+    explanation: "La capa d'enllaç de dades (capa 2) és responsable de l'empaquetat final, el control d'accés al medi (subcapa MAC) i la detecció d'errors mitjançant CRC. Es divideix en MAC i LLC."
+  },
+  {
+    topic: "Model OSI",
+    text: "Quines capes del model OSI defineix l'estàndard 802.11 (WiFi)?",
+    options: ["Física i d'aplicació", "Física i subcapa MAC d'enllaç", "Xarxa i transport", "Sessió i presentació"],
+    correct: 1,
+    explanation: "Els protocols 802.11 defineixen únicament el nivell físic i la subcapa MAC del nivell d'enllaç. Les capes superiors (TCP/IP, etc.) són comunes a qualsevol altra xarxa local."
+  },
+  {
+    topic: "CSMA/CD",
+    text: "En CSMA/CD, quan es detecta una col·lisió, que fan les estacions implicades?",
+    options: ["Esperen en silenci fins que el medi és lliure", "Emeten un 'jam pattern' i esperen un temps aleatori", "Reenvien el paquet immediatament", "Canvien de canal de freqüència"],
+    correct: 1,
+    explanation: "En detectar una col·lisió, les dues estacions emeten un 'jam pattern' (32-48 bits amb CRC incorrecte) per avisar la resta, i llavors seleccionen aleatòriament un retard de retransmissió basat en la seva adreça, que s'incrementa si continuen les col·lisions."
+  },
+  {
+    topic: "Topologies",
+    text: "Quina topologia física fa que una fallada en un node causi la caiguda de tota la xarxa?",
+    options: ["Estrella", "Bus", "Anell", "Malla"],
+    correct: 2,
+    explanation: "En la topologia en anell, els ordinadors es connecten en sèrie i el senyal ha de recórrer tot l'anell. Si un node falla, el circuit es trenca i tota la xarxa cau. Això és un dels principals inconvenients de l'anell."
+  },
+  {
+    topic: "Cablejat",
+    text: "Quin tipus de cable UTP cal per implementar 100baseTX?",
+    options: ["Categoria 3", "Categoria 4", "Categoria 5", "Categoria 6"],
+    correct: 2,
+    explanation: "100baseTX requereix cable UTP de Categoria 5 (o STP de 150Ω) amb 2 parells. La longitud màxima del segment és de 100m, limitada pel retard del senyal i no per l'atenuació."
+  },
+  {
+    topic: "Ethernet",
+    text: "Quin és el contingut mínim en bytes d'una trama Ethernet?",
+    options: ["32 bytes", "46 bytes", "64 bytes", "128 bytes"],
+    correct: 2,
+    explanation: "Una trama Ethernet ha de tenir com a mínim 64 bytes per garantir la correcta detecció de col·lisions en CSMA/CD. Per això existeixen els bytes de completació (padding) al camp de dades."
+  },
+  {
+    topic: "Ethernet",
+    text: "La regla 5-4-3 de l'Ethernet 10 Mbps estableix que...",
+    options: [
+      "Màxim 5 nodes, 4 hubs, 3 segments",
+      "Màxim 5 segments, 4 repetidors, 3 segments amb nodes",
+      "Màxim 5 hubs, 4 switches, 3 routers",
+      "Màxim 5 km de cable, 4 repetidors, 3 fibres"
+    ],
+    correct: 1,
+    explanation: "La regla 5-4-3 diu que entre dos nodes qualsevol del mateix domini de col·lisió pot haver-hi màxim 5 segments, connectats per 4 repetidors, dels quals només 3 segments poden tenir nodes connectats."
+  },
+  {
+    topic: "Interconnexió",
+    text: "Quina és la diferència principal entre un hub i un switch?",
+    options: [
+      "El hub treballa a la capa de xarxa, el switch a la física",
+      "El hub envia paquets a tots els ports; el switch envia només al port destí gràcies a les taules MAC",
+      "El switch és més lent però més segur",
+      "No hi ha diferència funcional, només de velocitat"
+    ],
+    correct: 1,
+    explanation: "El hub treballa a capa física i reenvia el senyal a TOTS els ports (un sol domini de col·lisió). El switch treballa a capa d'enllaç, aprèn les adreces MAC de cada port i envia cada paquet únicament al port correcte, aïllant dominis de col·lisió."
+  },
+  {
+    topic: "Fibra òptica",
+    text: "Quina és una avantatge clau de la fibra òptica respecte al coure?",
+    options: [
+      "És molt més barata d'instal·lar",
+      "Té immunitat a les interferències electromagnètiques",
+      "Permet velocitats màximes de 100 Mbps",
+      "Utilitza connectors RJ-45 estàndard"
+    ],
+    correct: 1,
+    explanation: "La fibra òptica té immunitat total a les interferències electromagnètiques (no transmet electricitat sinó llum). Altres avantatges: baixes pèrdues (0,25 dB/km), gran capacitat, aïllament elèctric, seguretat i possibilitat de cables llargs (fins a 4km)."
+  },
+  {
+    topic: "WiFi",
+    text: "Quin problema resol el mecanisme RTS/CTS en xarxes WiFi?",
+    options: [
+      "La pèrdua de contrasenya WPA",
+      "El problema del node ocult (hidden node)",
+      "La saturació de l'ample de banda",
+      "La incompatibilitat entre canals"
+    ],
+    correct: 1,
+    explanation: "El problema del node ocult ocorre quan dues estaciones connectades a un AP no es 'veuen' entre si. Poden transmetre alhora causant col·lisions a l'AP. RTS/CTS soluciona això: el dispositiu emet un Request To Send, i quan acaba, un Clear To Send per indicar que el medi és lliure."
+  },
+  {
+    topic: "WiFi Seguretat",
+    text: "Per quin motiu WEP no s'ha d'usar com a mecanisme de seguretat WiFi?",
+    options: [
+      "Perquè és massa lent per a xarxes modernes",
+      "Perquè l'algoritme de xifrat va ser trencat l'any 2001",
+      "Perquè no suporta contrasenyes de més de 8 caràcters",
+      "Perquè és incompatible amb 802.11n"
+    ],
+    correct: 1,
+    explanation: "L'any 2001 experts d'AT&T van demostrar com trencar WEP. L'algoritme de xifrat (RC4) té vulnerabilitats fonamentals que permeten descobrir la clau analitzant el tràfic. S'ha de fer servir WPA2 o WPA3 com a mínim."
+  },
+  {
+    topic: "WiFi Protocols",
+    text: "Quina norma 802.11 va introduir per primera vegada la tecnologia MIMO?",
+    options: ["802.11a", "802.11g", "802.11n", "802.11ac"],
+    correct: 2,
+    explanation: "La norma 802.11n (WiFi4, 2009) va ser la primera a incorporar MIMO (Multiple Input Multiple Output), que utilitza múltiples antenes per transmetre i rebre. Treballa a 2,4 i 5 GHz i assoleix fins a 500 Mbps teòrics."
+  },
+  {
+    topic: "Xarxes WAN",
+    text: "Quin tipus de xarxa WAN optimitza millor l'ús del medi físic i cobra en funció de la quantitat d'informació transmesa?",
+    options: [
+      "Commutació de circuits",
+      "Commutació de missatges",
+      "Commutació de paquets",
+      "Commutació de cel·les"
+    ],
+    correct: 2,
+    explanation: "Les xarxes de commutació de paquets divideixen la informació en paquets de longitud predeterminada, eviten que un únic flux monopolitzi el medi, i cobren per quantitat d'informació transmesa. Internet és el millor exemple."
+  },
+  {
+    topic: "RAID",
+    text: "Quin nivell RAID ofereix la millor redundància però requereix el doble de capacitat de disc?",
+    options: ["RAID 0", "RAID 1", "RAID 5", "RAID 10"],
+    correct: 1,
+    explanation: "RAID 1 (mirroring) copia exactament tota la informació d'un disc en un altre. Si un disc falla, l'altre pren el relleu sense pèrdua de dades. L'inconvenient és que cal el doble de discos i les escriptures són un 15% més lentes."
+  },
+  {
+    topic: "Transmissió",
+    text: "Quin mode de transmissió permet comunicació bidireccional simultània?",
+    options: ["Símplex", "Half-duplex", "Full-duplex", "Semidúplex"],
+    correct: 2,
+    explanation: "Full-duplex (o dúplex integral) permet transmetre i rebre simultàniament i de forma independent en els dos sentits. Half-duplex permet les dues direccions però no simultàniament. Símplex només en una direcció."
+  }
+];
+
+let currentQ = 0;
+let score = 0;
+let answered = [];
+
+function buildQuiz() {
+  const container = document.getElementById('quizContainer');
+  container.innerHTML = '';
+  questions.forEach((q, i) => {
+    const card = document.createElement('div');
+    card.className = 'question-card' + (i === 0 ? ' active' : '');
+    card.id = 'q' + i;
+    card.innerHTML = `
+      <div class="q-meta">Pregunta ${i+1}/15 · ${q.topic}</div>
+      <div class="q-text">${q.text}</div>
+      <div class="options" id="opts${i}">
+        ${q.options.map((opt, j) => `
+          <button class="option-btn" onclick="answer(${i}, ${j})" id="opt${i}_${j}">
+            <span class="opt-label">${String.fromCharCode(65+j)}.</span>
+            <span>${opt}</span>
+          </button>
+        `).join('')}
+      </div>
+      <div class="explanation" id="exp${i}">${q.explanation}</div>
+      <div class="nav-btns">
+        ${i > 0 ? `<button class="btn" onclick="goTo(${i-1})">← Anterior</button>` : ''}
+        ${i < questions.length-1 
+          ? `<button class="btn btn-primary" onclick="goTo(${i+1})" id="nextBtn${i}" ${!answered.includes(i)?'disabled':''}>Següent →</button>`
+          : `<button class="btn btn-primary" onclick="showResults()" id="nextBtn${i}" ${!answered.includes(i)?'disabled':''}>Veure resultats</button>`
+        }
+      </div>
+    `;
+    container.appendChild(card);
+  });
+  updateProgress();
+}
+
+function answer(qi, selected) {
+  if (answered.includes(qi)) return;
+  answered.push(qi);
+
+  const q = questions[qi];
+  const opts = document.getElementById('opts' + qi).querySelectorAll('.option-btn');
+  opts.forEach((btn, j) => {
+    btn.disabled = true;
+    if (j === q.correct) btn.classList.add('correct');
+    else if (j === selected) btn.classList.add('wrong');
+  });
+
+  if (selected === q.correct) {
+    score++;
+    document.getElementById('scoreVal').textContent = score;
+  }
+
+  document.getElementById('exp' + qi).classList.add('show');
+
+  const nextBtn = document.getElementById('nextBtn' + qi);
+  if (nextBtn) nextBtn.disabled = false;
+
+  updateProgress();
+}
+
+function goTo(i) {
+  document.querySelectorAll('.question-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('q' + i).classList.add('active');
+  currentQ = i;
+}
+
+function updateProgress() {
+  const pct = (answered.length / questions.length) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+function showResults() {
+  document.getElementById('quizContainer').style.display = 'none';
+  const rc = document.getElementById('resultsCard');
+  rc.classList.add('show');
+  document.getElementById('finalScore').textContent = score + '/' + questions.length;
+  const pct = (score / questions.length) * 100;
+  let msg = '';
+  if (pct >= 80) msg = '✓ Excel·lent preparació!';
+  else if (pct >= 60) msg = '⚠ Bon treball, repassar els errors.';
+  else msg = '✗ Cal estudiar més. Repassa els conceptes clau!';
+  document.getElementById('resultMsg').textContent = msg;
+}
+
+function restartQuiz() {
+  score = 0;
+  answered = [];
+  currentQ = 0;
+  document.getElementById('scoreVal').textContent = 0;
+  document.getElementById('resultsCard').classList.remove('show');
+  document.getElementById('quizContainer').style.display = 'block';
+  buildQuiz();
+}
+
+function toggleConcept(header) {
+  const body = header.nextElementSibling;
+  const toggle = header.querySelector('.toggle');
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open');
+  toggle.textContent = isOpen ? '+' : '−';
+}
+
+buildQuiz();
+</script>
+</body>
+</html>
